@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 
 namespace Dominio {
     public class Articulo {
@@ -20,7 +15,6 @@ namespace Dominio {
             imagenUrl=null;
             precio=0;
         }
-
         public int Id { get; set; }
         [DisplayName("Código")]
         public string Codigo { get; set; }
