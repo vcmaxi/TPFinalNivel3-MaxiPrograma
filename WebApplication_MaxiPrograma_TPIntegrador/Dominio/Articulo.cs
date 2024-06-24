@@ -6,14 +6,8 @@ namespace Dominio {
         //initialize everything with null
 
         public Articulo() {
-            Id=0;
-            Codigo=null;
-            Nombre=null;
-            Descripcion=null;
-            Marca=null;
-            Categoria=null;
-            imagenUrl=null;
-            precio=0;
+            Marca=new Marca();
+            Categoria=new Categoria();
         }
         public int Id { get; set; }
         [DisplayName("Código")]

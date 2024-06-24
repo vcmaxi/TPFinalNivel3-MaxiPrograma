@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Data.SqlClient;
 using Dominio;
 
 namespace Manager {
@@ -16,22 +14,24 @@ namespace Manager {
                 datos.setearConsulta(consulta);
                 datos.ejecutarLectura();
                 while(datos.Lector.Read()) {
-                    Marca aux = new Marca();
-                    aux.Id=(int)datos.Lector["Id"];
-                    aux.Descripcion=(string)datos.Lector["Descripcion"]; //se considera que en una base de datos este parametro no deberia ser null sino no tengo nada de informacion
-                    marcas.Add(aux);
+                    marcas.Add(ReadMarcaFromDB(datos.Lector));
                 }
                 return marcas;
             } catch(Exception) {
                 throw;
             } finally { datos.cerrarConexion(); }
-
+        }
+        private Marca ReadMarcaFromDB(SqlDataReader Lector) {
+            Marca aux = new Marca();
+            aux.Id=(int)datos.Lector["Id"];
+            if(Lector["Descripcion"]!=DBNull.Value) { aux.Descripcion=Lector["Descripcion"].ToString(); }
+            return aux;
         }
         public void Agregar(string dato) {
             try {
                 string consulta = "INSERT INTO MARCAS (Descripcion) VALUES (@desc)";
                 datos.setearConsulta(consulta);
-                datos.agregarParametros("@desc", dato);
+                datos.agregarParametros("@desc", (object)dato??DBNull.Value);
                 datos.ejecutarAccion();
             } catch(Exception) {
                 throw;
@@ -41,8 +41,8 @@ namespace Manager {
             try {
                 string consulta = "UPDATE MARCAS set Descripcion=@Descripcion WHERE Id=@Id";
                 datos.setearConsulta(consulta);
-                datos.agregarParametros("@Descripcion", marca.Descripcion);
-                datos.agregarParametros("@Id", marca.Id);
+                datos.agregarParametros("@Descripcion", (object)marca.Descripcion??DBNull.Value);
+                datos.agregarParametros("@Id", (object)marca.Id??DBNull.Value);
                 datos.ejecutarAccion();
             } catch(Exception) {
                 throw;
@@ -52,7 +52,7 @@ namespace Manager {
             try {
                 string consulta = "DELETE FROM MARCAS WHERE Id=@Id";
                 datos.setearConsulta(consulta);
-                datos.agregarParametros("@Id", marca.Id);
+                datos.agregarParametros("@Id", (object)marca.Id??DBNull.Value);
                 datos.ejecutarAccion();
             } catch(Exception) {
                 throw;
@@ -60,28 +60,6 @@ namespace Manager {
 
         }
 
-        public List<ArticuloResumen> ListarArticulosPorMarca(int idMarca) {
-            try {
-                List<ArticuloResumen> artRes = new List<ArticuloResumen>();
-                string consulta = "SELECT A.Codigo, M.Descripcion as Marca, A.Descripcion, C.Descripcion as Categoria, A.Precio  FROM ARTICULOS A , MARCAS M  , CATEGORIAS C "+
-                    "WHERE A.IdMarca=M.Id AND A.IdCategoria=C.Id AND M.Id=@Id";
-                datos.setearConsulta(consulta);
-                datos.agregarParametros("@Id", idMarca);
-                datos.ejecutarLectura();
-                while(datos.Lector.Read()) {
-                    ArticuloResumen aux = new ArticuloResumen();
-                    aux.Codigo=(string)datos.Lector["Codigo"];
-                    aux.DescripcionMarca=(string)datos.Lector["Marca"];
-                    aux.DescripcionCategoria=(string)datos.Lector["Categoria"];
-                    aux.Precio=(decimal)datos.Lector["Precio"];
-                    aux.Precio=decimal.Round(aux.Precio, 3);
-                    artRes.Add(aux);
-                }
-                return artRes;
-            } catch(Exception) {
-                throw;
-            } finally { datos.cerrarConexion(); }
-        }
     }
 }
 

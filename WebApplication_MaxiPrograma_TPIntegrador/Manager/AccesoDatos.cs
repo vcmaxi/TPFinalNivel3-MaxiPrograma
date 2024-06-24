@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Data.SqlClient;
 
 namespace Manager {
@@ -20,7 +16,7 @@ namespace Manager {
             conexion=new SqlConnection();
             comando=new SqlCommand();
             try {
-                conexion.ConnectionString="Data Source =.\\SQLEXPRESS; database=CATALOGO_DB; Integrated Security = True";
+                conexion.ConnectionString="Data Source =.\\SQLEXPRESS; database=CATALOGO_WEB_DB; Integrated Security = True";
             } catch(Exception) {
 
                 throw;

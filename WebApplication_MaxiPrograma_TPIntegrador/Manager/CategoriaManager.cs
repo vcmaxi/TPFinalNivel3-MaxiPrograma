@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Data.SqlClient;
 using Dominio;
 
 namespace Manager {
@@ -16,10 +14,8 @@ namespace Manager {
                 datos.setearConsulta(consulta);
                 datos.ejecutarLectura();
                 while(datos.Lector.Read()) {
-                    Categoria aux = new Categoria();
-                    aux.Id=(int)datos.Lector["Id"];
-                    aux.Descripcion=(string)datos.Lector["Descripcion"]; //se considera que en una base de datos este parametro no deberia ser null sino no tengo nada de informacion
-                    categorias.Add(aux);
+                    ReadCategoryFromDB(datos.Lector);
+                    categorias.Add(ReadCategoryFromDB(datos.Lector));
                 }
                 return categorias;
 
@@ -28,11 +24,19 @@ namespace Manager {
             } finally { datos.cerrarConexion(); }
 
         }
+
+        private Categoria ReadCategoryFromDB(SqlDataReader Lector) {
+            Categoria aux = new Categoria();
+            aux.Id=(int)datos.Lector["Id"];
+            if(Lector["Descripcion"]!=DBNull.Value) { aux.Descripcion=Lector["Descripcion"].ToString(); }
+            return aux;
+        }
+
         public void Agregar(string dato) {
             try {
                 string consulta = "INSERT INTO CATEGORIAS (Descripcion) VALUES (@desc)";
                 datos.setearConsulta(consulta);
-                datos.agregarParametros("@desc", dato);
+                datos.agregarParametros("@desc", (object)dato??DBNull.Value);
                 datos.ejecutarAccion();
             } catch(Exception) {
                 throw;
@@ -42,8 +46,8 @@ namespace Manager {
             try {
                 string consulta = "UPDATE CATEGORIAS set Descripcion=@Descripcion WHERE Id=@Id";
                 datos.setearConsulta(consulta);
-                datos.agregarParametros("@Descripcion", categoria.Descripcion);
-                datos.agregarParametros("@Id", categoria.Id);
+                datos.agregarParametros("@Descripcion", (object)categoria.Descripcion??DBNull.Value);
+                datos.agregarParametros("@Id", (object)categoria.Id??DBNull.Value);
                 datos.ejecutarAccion();
             } catch(Exception) {
                 throw;
@@ -53,34 +57,12 @@ namespace Manager {
             try {
                 string consulta = "DELETE FROM CATEGORIAS WHERE Id=@Id";
                 datos.setearConsulta(consulta);
-                datos.agregarParametros("@Id", categoria.Id);
+                datos.agregarParametros("@Id", (object)categoria.Id??DBNull.Value);
                 datos.ejecutarAccion();
             } catch(Exception) {
                 throw;
             } finally { datos.cerrarConexion(); }
         }
 
-        public List<ArticuloResumen> ListarArticulosPorCategoria(int idCat) {
-            try {
-                List<ArticuloResumen> artRes = new List<ArticuloResumen>();
-                string consulta = "SELECT A.Codigo, M.Descripcion AS Marca, A.Descripcion, C.Descripcion as Categoria, A.Precio  FROM ARTICULOS A , MARCAS M  , CATEGORIAS C "+
-                    "WHERE A.IdCategoria=C.Id AND A.IdMarca=M.Id AND C.Id=@Id";
-                datos.setearConsulta(consulta);
-                datos.agregarParametros("@Id", idCat);
-                datos.ejecutarLectura();
-                while(datos.Lector.Read()) {
-                    ArticuloResumen aux = new ArticuloResumen();
-                    aux.Codigo=(string)datos.Lector["Codigo"];
-                    aux.DescripcionMarca=(string)datos.Lector["Marca"];
-                    aux.DescripcionCategoria=(string)datos.Lector["Categoria"];
-                    aux.Precio=(decimal)datos.Lector["Precio"];
-                    aux.Precio=decimal.Round(aux.Precio, 3);
-                    artRes.Add(aux);
-                }
-                return artRes;
-            } catch(Exception) {
-                throw;
-            } finally { datos.cerrarConexion(); }
-        }
     }
 }
